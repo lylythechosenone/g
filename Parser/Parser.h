@@ -26,6 +26,10 @@ public:
         return stream->done();
     }
 
+    bool doneNow() override {
+        return stream->doneNow();
+    }
+
 private:
     DataStream<TokenizedLine> *stream = nullptr;
 };

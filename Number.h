@@ -3,12 +3,13 @@
 
 #include <math.h>
 #include <climits>
+#include "Util.h"
 
 class Number
 {
 public:
     bool isSigned;
-    [[nodiscard]] size_t size() const
+    size_t size() const
     {
         if (value.index() == 5)
         {
@@ -31,16 +32,16 @@ public:
     {
         if (str[0] == '-')
         {
-            if (auto num = stoll(str); num <= CHAR_MAX)
+            if (auto num = toLL(str); num <= CHAR_MAX && num >= CHAR_MIN)
             {
                 this->value = (signed char)num;
-            } else if (num <= SHRT_MAX)
+            } else if (num <= SHRT_MAX && num >= SHRT_MIN)
             {
                 this->value = (signed short)num;
-            } else if (num <= INT_MAX)
+            } else if (num <= INT_MAX && num >= INT_MIN)
             {
                 this->value = (signed int)num;
-            } else if (num <= LONG_MAX)
+            } else if (num <= LONG_MAX && num >= LONG_MIN)
             {
                 this->value = (signed long)num;
             } else
@@ -50,7 +51,7 @@ public:
             return *this;
         }
 
-        if (auto num = stoull(str); num <= UCHAR_MAX)
+        if (auto num = toULL(str); num <= UCHAR_MAX)
         {
             this->value = (unsigned char)num;
         } else if (num <= USHRT_MAX)
@@ -88,10 +89,10 @@ public:
     Number &operator=(const signed int val)
     {
         isSigned = true;
-        if (val <= SCHAR_MAX)
+        if (val <= CHAR_MAX && val >= CHAR_MIN)
         {
             this->value = (signed char)val;
-        } else if (val <= SHRT_MAX)
+        } else if (val <= SHRT_MAX && val >= SHRT_MIN)
         {
             this->value = (signed short)val;
         } else
@@ -101,23 +102,23 @@ public:
         return *this;
     }
 
-    Number &operator=(const std::variant<unsigned char, unsigned short, unsigned long, unsigned long long> value)
+    Number &operator=(const std::variant<unsigned char, unsigned short, unsigned long, unsigned long long> val)
     {
         isSigned = false;
         std::visit([this](const auto &val)
                    {
                        this->value = val;
-                   }, value);
+                   }, val);
         return *this;
     }
 
-    Number &operator=(const std::variant<signed char, signed short, signed long, signed long long> value)
+    Number &operator=(const std::variant<signed char, signed short, signed long, signed long long> val)
     {
         isSigned = true;
         std::visit([this](const auto &val)
                    {
                        this->value = val;
-                   }, value);
+                   }, val);
         return *this;
     }
 
@@ -127,7 +128,7 @@ public:
         return value == this->value;
     }
 
-    [[nodiscard]] std::string toString() const
+    std::string toString() const
     {
         std::string toReturn;
         std::visit([this, &toReturn](const auto &val)
@@ -140,6 +141,25 @@ public:
 private:
     std::variant<signed char, unsigned char, signed short, unsigned short, signed int, unsigned int,
             signed long long, unsigned long long, signed long, unsigned long> value;
+
+    unsigned long long toULL(std::string str) {
+        unsigned long long toReturn = 0;
+        for (int i = 0; i < str.length(); i++) {
+            if (!Util::isNumber(str[i])) {
+                throw std::string("'") + str[i] + "' is not a number.";
+            }
+            toReturn += (str[i] - 48) * pow(10, i);
+        }
+        return toReturn;
+    }
+
+    long long toLL(std::string str) {
+        if (str[0] == '-') {
+            return (-toULL(str.substr(1)));
+        } else {
+            return toULL(str);
+        }
+    }
 };
 
 #endif //G_NUMBER_H

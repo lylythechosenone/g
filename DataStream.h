@@ -10,6 +10,7 @@ public:
     virtual ~DataStreamBase() = default;
     virtual T get() = 0;
     virtual bool done() = 0;
+    virtual bool doneNow() = 0;
 };
 
 template<typename T>
@@ -46,6 +47,19 @@ public:
         {
             auto callbacksValue = std::get<1>(std::move(callbacks));
             return callbacksValue->done();
+        }
+    }
+
+    bool doneNow()
+    {
+        if (callbacks.index() == 0)
+        {
+            auto callbacksValue = std::get<0>(callbacks);
+            return callbacksValue->doneNow();
+        } else
+        {
+            auto callbacksValue = std::get<1>(std::move(callbacks));
+            return callbacksValue->doneNow();
         }
     }
 

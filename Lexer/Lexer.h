@@ -43,63 +43,61 @@ public:
     {
         TokenizedLine toReturn;
 
-        while (toReturn.tokens.size() == 0)
+        lineNum++;
+        toReturn.lineNum = lineNum;
+
+        std::string tokenStr;
+
+        bool inString = false;
+        while (true)
         {
-            lineNum++;
-            toReturn.lineNum = lineNum;
-
-            std::string tokenStr;
-
-            bool inString = false;
-            while (true)
+            const char chr = stream->get();
+            if (chr == '\n') break;
+            if (inString)
             {
-                const char chr = stream->get();
-                if (chr == '\n') break;
-                if (inString)
+                if (chr == '"')
                 {
-                    if (chr == '"')
-                    {
-                        inString = false;
-                        Token token;
-                        token.type = TokenType::STRING;
-                        token.data["string"] = tokenStr;
-                        toReturn.tokens.push_back(token);
-                        tokenStr = "";
-                        continue;
-                    }
-                    tokenStr += chr;
-                    continue;
-                }
-
-                if (chr == ' ')
-                {
-                    endToken(toReturn, tokenStr);
-                    continue;
-                } if (chr == '(' || chr == ')' || chr == '[' || chr == ']' || chr == '{' || chr == '}')
-                {
-                    endToken(toReturn, tokenStr);
+                    inString = false;
                     Token token;
-                    token.type = TokenType::BRACKET;
-                    token.data["string"] = chr;
-                    if (chr == '(' || chr == '[' || chr == '{')
-                    {
-                        token.data["opening"] = true;
-                    } else
-                    {
-                        token.data["opening"] = false;
-                    }
+                    token.type = TokenType::STRING;
+                    token.data["string"] = tokenStr;
                     toReturn.tokens.push_back(token);
-                    continue;
-                } if (chr == '"')
-                {
-                    endToken(toReturn, tokenStr);
-                    inString = true;
+                    tokenStr = "";
                     continue;
                 }
                 tokenStr += chr;
+                continue;
             }
-            endToken(toReturn, tokenStr);
+
+            if (chr == ' ')
+            {
+                endToken(toReturn, tokenStr);
+                continue;
+            } if (chr == '(' || chr == ')' || chr == '[' || chr == ']' || chr == '{' || chr == '}')
+            {
+                endToken(toReturn, tokenStr);
+                Token token;
+                token.type = TokenType::BRACKET;
+                token.data["string"] = chr;
+                if (chr == '(' || chr == '[' || chr == '{')
+                {
+                    token.data["opening"] = true;
+                } else
+                {
+                    token.data["opening"] = false;
+                }
+                toReturn.tokens.push_back(token);
+                continue;
+            } if (chr == '"')
+            {
+                endToken(toReturn, tokenStr);
+                inString = true;
+                continue;
+            }
+            tokenStr += chr;
         }
+        endToken(toReturn, tokenStr);
+
         return toReturn;
     }
 
@@ -108,7 +106,12 @@ public:
         return (size_t)stream->tellg() + 1 == fileLength;
     }
 
+    bool doneNow() override {
+        return (size_t)stream->tellg() == fileLength;
+    }
+
 private:
+
     std::ifstream *stream;
     int lineNum = 0;
 

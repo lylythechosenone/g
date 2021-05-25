@@ -1,0 +1,16 @@
+project "g" "./"
+
+type C++
+
+out "g"
+out-type EXECUTABLE
+out-directory "./build"
+
+exclude "./cmake-build-debug"
+
+library "m"
+library "dl"
+library "c"
+
+version c++2a
+compiler GCC
