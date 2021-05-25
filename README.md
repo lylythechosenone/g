@@ -11,7 +11,7 @@ The idea of g is it's a very simple, easy-to-learn language that is also very fa
 ## What makes g unique
 Unlike most compiled languages, g doesn't have pointers. It handles memory things for you, under the hood. There are also a lot of other unique things about g. For example, a function can return multiple values, as long as they can all be shoved into `rax`.
 
-| NOTE: even though g doesn't have pointers, there is a `System.Memory` namespace that provides functions for setting <br>specific locations in memory. |
+| NOTE: even though g doesn't have pointers, there is a `System.Memory` namespace that provides functions for setting specific locations in memory. |
 | --- |
 
 #### Custom subtypes
@@ -73,7 +73,7 @@ Just because the compiler isn't done doesn't mean you shouldn't start learning n
     * `pre else if`
     * `pre end`
 
-| NOTE: running `pre if` on a boolean macro will return based on if the macro is defined, not based on the value. <br>if you want to base off of value, use `pre if MACRO == true` |
+| NOTE: running `pre if` on a boolean macro will return based on if the macro is defined, not based on the value. if you want to base off of value, use `pre if MACRO == true` |
 | --- |
 
 * `pre define`: define a macro
