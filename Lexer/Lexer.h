@@ -103,11 +103,11 @@ public:
 
     bool done() override
     {
-        return (size_t)stream->tellg() + 1 == fileLength;
+        return (size_t)stream->tellg() + 1 >= fileLength;
     }
 
     bool doneNow() override {
-        return (size_t)stream->tellg() == fileLength;
+        return (size_t)stream->tellg() >= fileLength;
     }
 
 private:
