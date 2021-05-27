@@ -1,10 +1,9 @@
-#include <fstream>
 #include <iostream>
 
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 
-int main(int argc, char* argv[])
+int main( int argc, char* argv[])
 {
     std::ifstream stream(argv[1]);
 

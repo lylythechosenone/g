@@ -18,6 +18,8 @@ public:
         return pow(2, (int)(value.index() / 2.0f + 0.5f) - 1);
     }
 
+    Number() {};
+
     Number(const std::string str) {*this = str;}
 
     Number(const unsigned int value) {*this = value;}
@@ -155,7 +157,7 @@ private:
 
     long long toLL(std::string str) {
         if (str[0] == '-') {
-            return (-toULL(str.substr(1)));
+            return -toULL(str.substr(1));
         } else {
             return toULL(str);
         }

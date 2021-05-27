@@ -15,10 +15,43 @@ enum class TokenType
     BRACKET
 };
 
-struct Token
-{
+enum class KeywordType {
+    INCLUDE,
+    IF,
+    LOOP_BEGIN,
+    LOOP_UTIL,
+    SWITCH,
+    TYPE,
+    PRE_PROCESSOR,
+    CLASS,
+    ACCESS_MODIFIER,
+    MODIFIER,
+    MISC
+};
+
+enum class SeparatorType {
+    COLON,
+    COMMA
+};
+
+struct TokenBase { std::string string; TokenBase() {} };
+
+struct KeywordToken : public TokenBase { KeywordType type; };
+
+typedef TokenBase StringToken;
+
+struct NumberToken : public TokenBase { Number number;  };
+
+typedef TokenBase IdentifierToken;
+
+struct BracketToken : public TokenBase { bool opening; };
+
+struct SeparatorToken : public TokenBase { SeparatorType type; };
+
+
+struct Token {
+    TokenBase *val;
     TokenType type;
-    std::map<std::string, Value> data;
 };
 
 struct TokenizedLine

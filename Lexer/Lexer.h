@@ -5,8 +5,8 @@
 #include "../Util.h"
 #include "../g.h"
 
-#ifndef G_LEXER_H
-#define G_LEXER_H
+#ifndef G_LEXER
+#define G_LEXER
 
 class LexDataStream: public DataStreamBase<TokenizedLine>
 {
@@ -22,20 +22,124 @@ public:
     static void endToken(TokenizedLine &line, std::string &tokenStr)
     {
         if (tokenStr == "") return;
-        Token token;
         if (Util::isNumber(tokenStr))
         {
-            token.type = TokenType::NUMBER;
-            token.data["number"] = Number(tokenStr);
-        } else if (Util::includes(G::keywords, tokenStr))
+            NumberToken *token = new NumberToken();
+            token->string = tokenStr;
+            token->number = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::NUMBER;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::includeKeywords, tokenStr))
         {
-            token.type = TokenType::KEYWORD;
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::INCLUDE;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::ifKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::IF;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::loopBeginKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::LOOP_BEGIN;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::loopUtilKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::LOOP_UTIL;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::switchKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::SWITCH;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::typeKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::TYPE;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::preProcessorKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::PRE_PROCESSOR;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::classKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::CLASS;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::accessModifierKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::ACCESS_MODIFIER;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::modifierKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::MODIFIER;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
+        } else if (Util::includes(G::miscKeywords, tokenStr))
+        {
+            KeywordToken *token = new KeywordToken();
+            token->type = KeywordType::MISC;
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::KEYWORD;
+            line.tokens.push_back(toReturn);
         } else
         {
-            token.type = TokenType::IDENTIFIER;
+            IdentifierToken *token = new IdentifierToken();
+            token->string = tokenStr;
+            Token toReturn;
+            toReturn.val = token;
+            toReturn.type = TokenType::IDENTIFIER;
+            line.tokens.push_back(toReturn);
+
         }
-        token.data["string"] = tokenStr;
-        line.tokens.push_back(token);
         tokenStr = "";
     }
 
@@ -52,16 +156,18 @@ public:
         while (true)
         {
             const char chr = stream->get();
-            if (chr == '\n') break;
+            if (chr == '\n' || chr == -1) break;
             if (inString)
             {
                 if (chr == '"')
                 {
                     inString = false;
-                    Token token;
-                    token.type = TokenType::STRING;
-                    token.data["string"] = tokenStr;
-                    toReturn.tokens.push_back(token);
+                    StringToken *token = new StringToken();
+                    token->string = tokenStr;
+                    Token tokenWrapper;
+                    tokenWrapper.val = token;
+                    tokenWrapper.type = TokenType::STRING;
+                    toReturn.tokens.push_back(tokenWrapper);
                     tokenStr = "";
                     continue;
                 }
@@ -76,17 +182,19 @@ public:
             } if (chr == '(' || chr == ')' || chr == '[' || chr == ']' || chr == '{' || chr == '}')
             {
                 endToken(toReturn, tokenStr);
-                Token token;
-                token.type = TokenType::BRACKET;
-                token.data["string"] = chr;
+                BracketToken *token = new BracketToken();
+                token->string = tokenStr;
                 if (chr == '(' || chr == '[' || chr == '{')
                 {
-                    token.data["opening"] = true;
+                    token->opening = true;
                 } else
                 {
-                    token.data["opening"] = false;
+                    token->opening = false;
                 }
-                toReturn.tokens.push_back(token);
+                Token tokenWrapper;
+                tokenWrapper.val = token;
+                tokenWrapper.type = TokenType::BRACKET;
+                toReturn.tokens.push_back(tokenWrapper);
                 continue;
             } if (chr == '"')
             {
@@ -103,11 +211,11 @@ public:
 
     bool done() override
     {
-        return (size_t)stream->tellg() + 1 >= fileLength;
+        return (size_t)stream->tellg() >= fileLength;
     }
 
     bool doneNow() override {
-        return (size_t)stream->tellg() >= fileLength;
+        return (size_t)stream->tellg() - 1 >= fileLength;
     }
 
 private:
@@ -135,4 +243,4 @@ public:
     }
 };
 
-#endif //G_LEXER_H
+#endif // G_LEXER
