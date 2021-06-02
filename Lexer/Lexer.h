@@ -357,8 +357,7 @@ public:
             }
 
             std::ifstream *strm = nullptr;
-
-            fs::path path = line.tokens[1].val->string;
+            fs::path path(line.tokens[1].val->string);
             if (exists(path)) {
                 strm = new std::ifstream(path);
             }
@@ -373,10 +372,10 @@ public:
             while (!lexed.done()) {
                 TokenizedLine tempLine = lexed.get();
                 toReturn[toReturn.size() - 1].push_back(tempLine);
-                if (line.tokens[0].type == TokenType::KEYWORD &&
-                    ((KeywordToken *) line.tokens[0].val)->type == KeywordType::INCLUDE) {
-                    auto temp = Lexer::include(line);
-                    toReturn.insert(toReturn.end(), temp.begin(), temp.end());
+                if (tempLine.tokens[0].type == TokenType::KEYWORD &&
+                    ((KeywordToken *) tempLine.tokens[0].val)->type == KeywordType::INCLUDE) {
+                    auto vec = Lexer::include(tempLine);
+                    toReturn.insert(toReturn.end(), vec.begin(), vec.end());
                 }
             }
             delete strm;
