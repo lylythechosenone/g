@@ -34,7 +34,7 @@ enum class SeparatorType {
     COMMA
 };
 
-struct TokenBase { std::string string; TokenBase() {} };
+struct TokenBase { std::string string; int column; };
 
 struct KeywordToken : public TokenBase { KeywordType type; };
 
@@ -52,6 +52,15 @@ struct SeparatorToken : public TokenBase { SeparatorType type; };
 struct Token {
     TokenBase *val;
     TokenType type;
+
+    std::string toString() {
+        switch (type) {
+            case TokenType::STRING:
+                return "\"" + val->string + "\"";
+            default:
+                return val->string;
+        }
+    }
 };
 
 struct TokenizedLine

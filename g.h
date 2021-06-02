@@ -15,6 +15,10 @@ namespace G
     inline std::vector<std::string> accessModifierKeywords = {"public", "private"};
     inline std::vector<std::string> modifierKeywords = {"const", "compiletime"};
     inline std::vector<std::string> miscKeywords = {"end", "loop", "define", "external", "true", "false"};
+
+#ifdef __linux
+    inline std::vector<std::string> libraryPaths = {"/usr/lib/g", "/usr/local/lib/g", "./lib"};
+#endif
 }
 
 #endif //G_G_H

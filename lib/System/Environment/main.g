@@ -1,5 +1,5 @@
 class Environment {
-    public compiletime string("Windows", "MacOS", "Linux", "Unix", "iOS", "Android") \
+    public compiletime string("Windows", "MacOS", "Linux", "Unix", "iOS", "Android") os
 pre if _WIN32
     os = "Windows"
 pre else if _MAC32

@@ -37,6 +37,30 @@ public:
         }
         return false;
     }
+
+    static std::vector<std::string> split(std::string str, std::string delimiter) {
+        std::vector<std::string> toReturn;
+
+        auto start = 0U;
+        auto end = str.find(delimiter);
+        while (end != std::string::npos)
+        {
+            toReturn.push_back(str.substr(start, end - start));
+            start = end + delimiter.length();
+            end = str.find(delimiter, start);
+        }
+        toReturn.push_back(str.substr(start, end));
+        return toReturn;
+    }
+
+    static std::string replace(std::string str, std::string token, std::string value) {
+        auto split = Util::split(str, token);
+        std::string toReturn;
+        for (int i = 0; i < split.size(); i++) {
+            toReturn += split[i] + value;
+        }
+        return toReturn;
+    }
 };
 
 #endif //G_UTIL_H
