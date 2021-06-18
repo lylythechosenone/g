@@ -4,6 +4,7 @@
 #include "../DataStream.h"
 #include "../Util.h"
 #include "../g.h"
+#include "../File.h"
 
 #include <filesystem>
 
@@ -26,6 +27,7 @@ public:
     void endToken(TokenizedLine &line, std::string &tokenStr, int column)
     {
         if (tokenStr == "") return;
+        // Numbers
         if (Util::isNumber(tokenStr))
         {
             NumberToken *token = new NumberToken();
@@ -37,7 +39,9 @@ public:
             toReturn.type = TokenType::NUMBER;
             line.tokens.push_back(toReturn);
             tokens.push_back(toReturn);
-        } else if (Util::includes(G::includeKeywords, tokenStr))
+        }
+            // Keywords
+        else if (Util::includes(G::includeKeywords, tokenStr))
         {
             KeywordToken *token = new KeywordToken();
             token->type = KeywordType::INCLUDE;
@@ -158,7 +162,88 @@ public:
             toReturn.type = TokenType::KEYWORD;
             line.tokens.push_back(toReturn);
             tokens.push_back(toReturn);
-        } else
+        }
+            // Operators
+            else if (Util::includes(G::assignmentOperators, tokenStr))
+            {
+                OperatorToken *token = new OperatorToken();
+                token->type = OperatorType::ASSIGNMENT;
+                token->string = tokenStr;
+                token->column = column;
+                Token toReturn;
+                toReturn.val = token;
+                toReturn.type = TokenType::OPERATOR;
+                line.tokens.push_back(toReturn);
+                tokens.push_back(toReturn);
+            } else if (Util::includes(G::mathOperators, tokenStr))
+            {
+                OperatorToken *token = new OperatorToken();
+                token->type = OperatorType::MATH;
+                token->string = tokenStr;
+                token->column = column;
+                Token toReturn;
+                toReturn.val = token;
+                toReturn.type = TokenType::OPERATOR;
+                line.tokens.push_back(toReturn);
+                tokens.push_back(toReturn);
+            } else if (Util::includes(G::bitwiseOperators, tokenStr))
+            {
+                OperatorToken *token = new OperatorToken();
+                token->type = OperatorType::BITWISE;
+                token->string = tokenStr;
+                token->column = column;
+                Token toReturn;
+                toReturn.val = token;
+                toReturn.type = TokenType::OPERATOR;
+                line.tokens.push_back(toReturn);
+                tokens.push_back(toReturn);
+            } else if (Util::includes(G::comparisonOperators, tokenStr))
+            {
+                OperatorToken *token = new OperatorToken();
+                token->type = OperatorType::COMPARISON;
+                token->string = tokenStr;
+                token->column = column;
+                Token toReturn;
+                toReturn.val = token;
+                toReturn.type = TokenType::OPERATOR;
+                line.tokens.push_back(toReturn);
+                tokens.push_back(toReturn);
+            } else if (Util::includes(G::logicOperators, tokenStr))
+            {
+                OperatorToken *token = new OperatorToken();
+                token->type = OperatorType::LOGIC;
+                token->string = tokenStr;
+                token->column = column;
+                Token toReturn;
+                toReturn.val = token;
+                toReturn.type = TokenType::OPERATOR;
+                line.tokens.push_back(toReturn);
+                tokens.push_back(toReturn);
+            } else if (Util::includes(G::incrementDecrementOperators, tokenStr))
+            {
+                OperatorToken *token = new OperatorToken();
+                token->type = OperatorType::INCREMENT_DECREMENT;
+                token->string = tokenStr;
+                token->column = column;
+                Token toReturn;
+                toReturn.val = token;
+                toReturn.type = TokenType::OPERATOR;
+                line.tokens.push_back(toReturn);
+                tokens.push_back(toReturn);
+            } else if (Util::includes(G::ternaryOperators, tokenStr))
+            {
+                OperatorToken *token = new OperatorToken();
+                token->type = OperatorType::TERNARY;
+                token->string = tokenStr;
+                token->column = column;
+                Token toReturn;
+                toReturn.val = token;
+                toReturn.type = TokenType::OPERATOR;
+                line.tokens.push_back(toReturn);
+                tokens.push_back(toReturn);
+            }
+            // Identifier
+        else
         {
             IdentifierToken *token = new IdentifierToken();
             token->string = tokenStr;
@@ -183,6 +268,7 @@ public:
 
         int column = 0;
         bool inString = false;
+        beginLabel:
         while (toReturn.tokens.size() == 0) {
             while (true)
             {
@@ -230,6 +316,28 @@ public:
                     continue;
                 }
 
+                if (!tokenStr.empty()) {
+                    if (tokenStr.length() >= 2 && tokenStr.substr(tokenStr.length() - 2) == "//") {
+                        tokenStr = tokenStr.substr(0, tokenStr.length() - 2);
+                        endToken(toReturn, tokenStr, column - 2);
+                        goto superBreakLabel;
+                    } if (tokenStr.length() >= 2 && Util::includes(G::operators, tokenStr.substr(tokenStr.length() - 2))) {
+                        std::string operatorStr = tokenStr.substr(tokenStr.length() - 2);
+                        tokenStr = tokenStr.substr(0, tokenStr.length() - 2);
+                        endToken(toReturn, tokenStr, column - 2);
+                        endToken(toReturn, operatorStr, column);
+                        continue;
+                    } if (tokenStr.length() >= 2 && Util::includes(G::operators, tokenStr.substr(tokenStr.length() - 2, 1))) {
+                        std::string operatorStr = tokenStr.substr(tokenStr.length() - 2, 1);
+                        std::string lastChar = tokenStr.substr(tokenStr.length() - 1);
+                        tokenStr = tokenStr.substr(0, tokenStr.length() - 2);
+                        endToken(toReturn, tokenStr, column - 1);
+                        endToken(toReturn, operatorStr, column);
+                        tokenStr = lastChar;
+                        continue;
+                    }
+                }
+
                 if (chr == ' ')
                 {
                     endToken(toReturn, tokenStr, column);
@@ -265,6 +373,16 @@ public:
         }
 
         return toReturn;
+        superBreakLabel:
+        while (true) {
+            const char chr = stream->get();
+            if (chr == '\n') {
+                break;
+            }
+        }
+        column = 0;
+        inString = false;
+        goto beginLabel;
     }
 
     bool done() override
@@ -304,12 +422,12 @@ public:
         return DataStream(streamStack[streamStack.size() - 1]);
     }
 
-    static std::vector<std::vector<TokenizedLine>> include(TokenizedLine line) {
-        std::vector<std::vector<TokenizedLine>> toReturn;
+    static std::vector<File> include(TokenizedLine line) {
+        std::vector<File> toReturn;
         if (line.tokens[0].val->string == "using") {
             if (line.tokens[1].type != TokenType::IDENTIFIER) {
                 std::cerr << "Error (" << line.lineNum << ":" << line.tokens[1].val->column << "): `" << line.tokens[1].toString() <<
-                    "` is not an identifier." << std::endl;
+                          "` is not an identifier." << std::endl;
                 std::exit(1);
             }
             if (line.tokens.size() > 2) {
@@ -318,25 +436,28 @@ public:
             }
 
             std::ifstream *strm = nullptr;
+            fs::path path;
             for (int i = 0; i < G::libraryPaths.size(); i++) {
-                fs::path path = G::libraryPaths[i];
+                path = G::libraryPaths[i];
                 path.append(Util::replace(line.tokens[1].val->string, ".", "/"));
                 path.append("main.g");
                 if (exists(path)) {
                     strm = new std::ifstream(path);
+                    break;
                 }
             }
             if (strm == nullptr) {
                 std::cerr << "Error (" << line.lineNum << ":" << line.tokens[1].val->column << "): Could not find include file `" <<
-                    line.tokens[1].toString() << "`" << std::endl;
+                          line.tokens[1].toString() << "`" << std::endl;
                 std::exit(1);
             }
 
             auto lexed = Lexer::lex(strm);
-            toReturn.push_back(std::vector<TokenizedLine>());
+            toReturn.push_back(File());
             while (!lexed.done()) {
                 TokenizedLine tempLine = lexed.get();
-                toReturn[toReturn.size() - 1].push_back(tempLine);
+                toReturn[toReturn.size() - 1].lines.push_back(tempLine);
+                toReturn[toReturn.size() - 1].name = absolute(path);
                 if (tempLine.tokens[0].type == TokenType::KEYWORD &&
                     ((KeywordToken *) tempLine.tokens[0].val)->type == KeywordType::INCLUDE) {
                     auto vec = Lexer::include(tempLine);
@@ -368,10 +489,11 @@ public:
             }
 
             auto lexed = Lexer::lex(strm);
-            toReturn.push_back(std::vector<TokenizedLine>());
+            toReturn.push_back(File());
             while (!lexed.done()) {
                 TokenizedLine tempLine = lexed.get();
-                toReturn[toReturn.size() - 1].push_back(tempLine);
+                toReturn[toReturn.size() - 1].lines.push_back(tempLine);
+                toReturn[toReturn.size() - 1].name = path.filename();
                 if (tempLine.tokens[0].type == TokenType::KEYWORD &&
                     ((KeywordToken *) tempLine.tokens[0].val)->type == KeywordType::INCLUDE) {
                     auto vec = Lexer::include(tempLine);

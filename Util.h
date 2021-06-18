@@ -38,6 +38,21 @@ public:
         return false;
     }
 
+    template<typename T>
+    static bool includes(std::vector<std::vector<T>> arrs, T item)
+    {
+        for (const auto &arr : arrs) {
+            for (int i = 0; i < arr.size(); i++)
+            {
+                if (arr[i] == item)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     static std::vector<std::string> split(std::string str, std::string delimiter) {
         std::vector<std::string> toReturn;
 

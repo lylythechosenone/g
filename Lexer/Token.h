@@ -12,7 +12,8 @@ enum class TokenType
     STRING,
     NUMBER,
     IDENTIFIER,
-    BRACKET
+    BRACKET,
+    OPERATOR
 };
 
 enum class KeywordType {
@@ -34,6 +35,16 @@ enum class SeparatorType {
     COMMA
 };
 
+enum class OperatorType {
+    ASSIGNMENT,
+    MATH,
+    BITWISE,
+    COMPARISON,
+    LOGIC,
+    INCREMENT_DECREMENT,
+    TERNARY
+};
+
 struct TokenBase { std::string string; int column; };
 
 struct KeywordToken : public TokenBase { KeywordType type; };
@@ -47,6 +58,8 @@ typedef TokenBase IdentifierToken;
 struct BracketToken : public TokenBase { bool opening; };
 
 struct SeparatorToken : public TokenBase { SeparatorType type; };
+
+struct OperatorToken : public TokenBase { OperatorType type; };
 
 
 struct Token {
