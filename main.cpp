@@ -2,8 +2,9 @@
 
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+#include "File.h"
 
-int main( int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     std::ifstream stream(argv[1]);
 
@@ -13,26 +14,30 @@ int main( int argc, char* argv[])
     }
 
     auto lexed = Lexer::lex(&stream);
-    std::vector<std::vector<TokenizedLine>> files;
-    std::vector<TokenizedLine> mainFile;
+    std::vector<File> files;
+    File mainFile;
+    mainFile.name = argv[1];
 
     while (!lexed.done()) {
         TokenizedLine line = lexed.get();
-        mainFile.push_back(line);
+        mainFile.lines.push_back(line);
         if (line.tokens[0].type == TokenType::KEYWORD &&
             ((KeywordToken *) line.tokens[0].val)->type == KeywordType::INCLUDE) {
             auto temp = Lexer::include(line);
             files.insert(files.end(), temp.begin(), temp.end());
-            std::vector<TokenizedLine> file = files[files.size() - 1];
-            for (int i = 0; i < file.size(); i++) {
-                for (int j = 0; j < file[i].tokens.size(); j++) {
-                    std::cout << file[i].tokens[j].toString() << " ";
-                }
-                std::cout << std::endl;
-            }
+            File file = files[files.size() - 1];
         }
     }
     files.push_back(mainFile);
+    for (auto &file : files) {
+        std::cout << std::endl << "File `" << file.name << "`:" << std::endl;
+        for (int i = 0; i < file.lines.size(); i++) {
+            for (int j = 0; j < file.lines[i].tokens.size(); j++) {
+                std::cout << "\\\\" << file.lines[i].tokens[j].toString() << "\\\\ ";
+            }
+            std::cout << std::endl;
+        }
+    }
 
     for (int i = 0; i < files.size(); i++) {
         Lexer::cleanUp();
