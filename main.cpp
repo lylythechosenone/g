@@ -20,12 +20,13 @@ int main(int argc, char* argv[])
 
     while (!lexed.done()) {
         TokenizedLine line = lexed.get();
-        mainFile.lines.push_back(line);
         if (line.tokens[0].type == TokenType::KEYWORD &&
             ((KeywordToken *) line.tokens[0].val)->type == KeywordType::INCLUDE) {
             auto temp = Lexer::include(line);
             files.insert(files.end(), temp.begin(), temp.end());
             File file = files[files.size() - 1];
+        } else {
+            mainFile.lines.push_back(line);
         }
     }
     files.push_back(mainFile);
@@ -33,7 +34,8 @@ int main(int argc, char* argv[])
         std::cout << std::endl << "File `" << file.name << "`:" << std::endl;
         for (int i = 0; i < file.lines.size(); i++) {
             for (int j = 0; j < file.lines[i].tokens.size(); j++) {
-                std::cout << "\\\\" << file.lines[i].tokens[j].toString() << "\\\\ ";
+                std::cout << "\\" << (int)file.lines[i].tokens[j].type << "\\"
+                << file.lines[i].tokens[j].toString() << "\\" << (int)file.lines[i].tokens[j].type << "\\ ";
             }
             std::cout << std::endl;
         }

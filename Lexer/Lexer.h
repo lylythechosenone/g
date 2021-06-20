@@ -16,6 +16,12 @@
 class LexDataStream: public DataStreamBase<TokenizedLine>
 {
 public:
+    ~LexDataStream() {
+        for (int i = 0; i < tokens.size(); i++) {
+            delete tokens[i].val;
+        }
+    }
+
     explicit LexDataStream(std::ifstream *stream)
     {
         this->stream = stream;
@@ -342,6 +348,30 @@ public:
                 {
                     endToken(toReturn, tokenStr, column);
                     continue;
+                } if (chr == ',') {
+                    endToken(toReturn, tokenStr, column);
+                    SeparatorToken *token = new SeparatorToken();
+                    token->string = chr;
+                    token->column = column;
+                    token->type = SeparatorType::COMMA;
+                    Token tokenWrapper;
+                    tokenWrapper.val = token;
+                    tokenWrapper.type = TokenType::SEPARATOR;
+                    tokens.push_back(tokenWrapper);
+                    toReturn.tokens.push_back(tokenWrapper);
+                    continue;
+                } if (chr == ':') {
+                    endToken(toReturn, tokenStr, column);
+                    SeparatorToken *token = new SeparatorToken();
+                    token->string = chr;
+                    token->column = column;
+                    token->type = SeparatorType::COLON;
+                    Token tokenWrapper;
+                    tokenWrapper.val = token;
+                    tokenWrapper.type = TokenType::SEPARATOR;
+                    tokens.push_back(tokenWrapper);
+                    toReturn.tokens.push_back(tokenWrapper);
+                    continue;
                 } if (chr == '(' || chr == ')' || chr == '[' || chr == ']' || chr == '{' || chr == '}')
                 {
                     endToken(toReturn, tokenStr, column);
@@ -454,14 +484,15 @@ public:
 
             auto lexed = Lexer::lex(strm);
             toReturn.push_back(File());
+            toReturn[toReturn.size() - 1].name = absolute(path);
             while (!lexed.done()) {
                 TokenizedLine tempLine = lexed.get();
-                toReturn[toReturn.size() - 1].lines.push_back(tempLine);
-                toReturn[toReturn.size() - 1].name = absolute(path);
                 if (tempLine.tokens[0].type == TokenType::KEYWORD &&
                     ((KeywordToken *) tempLine.tokens[0].val)->type == KeywordType::INCLUDE) {
                     auto vec = Lexer::include(tempLine);
                     toReturn.insert(toReturn.end(), vec.begin(), vec.end());
+                } else {
+                    toReturn[toReturn.size() - 1].lines.push_back(tempLine);
                 }
             }
             delete strm;
@@ -490,14 +521,15 @@ public:
 
             auto lexed = Lexer::lex(strm);
             toReturn.push_back(File());
+            toReturn[toReturn.size() - 1].name = path.filename();
             while (!lexed.done()) {
                 TokenizedLine tempLine = lexed.get();
-                toReturn[toReturn.size() - 1].lines.push_back(tempLine);
-                toReturn[toReturn.size() - 1].name = path.filename();
                 if (tempLine.tokens[0].type == TokenType::KEYWORD &&
                     ((KeywordToken *) tempLine.tokens[0].val)->type == KeywordType::INCLUDE) {
                     auto vec = Lexer::include(tempLine);
                     toReturn.insert(toReturn.end(), vec.begin(), vec.end());
+                } else {
+                    toReturn[toReturn.size() - 1].lines.push_back(tempLine);
                 }
             }
             delete strm;

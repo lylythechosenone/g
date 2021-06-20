@@ -13,7 +13,8 @@ enum class TokenType
     NUMBER,
     IDENTIFIER,
     BRACKET,
-    OPERATOR
+    OPERATOR,
+    SEPARATOR
 };
 
 enum class KeywordType {
